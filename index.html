@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#03091e">
+<title>CWP - Chat With Purvesh</title>
+
+<style>
+:root{
+  --bg:#020719;
+  --sidebar:#050d24;
+  --panel:#091630;
+  --panel2:#0d1c3c;
+  --text:#edf5ff;
+  --muted:#8da5ce;
+  --blue:#168bff;
+  --cyan:#18dfff;
+  --purple:#9655ff;
+  --border:rgba(63,143,255,.23);
+  --gradient:linear-gradient(110deg,#13dfff,#168bff,#a34cff);
+  --shadow:0 0 22px rgba(19,139,255,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,sans-serif;
+  height:100vh;
+  overflow:hidden;
+}
+body.light{
+  --bg:#eef4ff;
+  --sidebar:#ffffff;
+  --panel:#ffffff;
+  --panel2:#e8f0ff;
+  --text:#142344;
+  --muted:#647895;
+  --border:rgba(45,110,220,.2);
+  --shadow:0 0 20px rgba(30,100,200,.08);
+}
+button,input,textarea{font:inherit}
+button{cursor:pointer;color:inherit}
+.app{height:100vh;display:flex}
+
+/* SIDEBAR */
+.sidebar{
+  width:285px;
+  min-width:285px;
+  background:var(--sidebar);
+  border-right:1px solid var(--border);
+  padding:19px 14px;
+  display:flex;
+  flex-direction:column;
+  gap:15px;
+  overflow-y:auto;
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:15px;
+  padding:10px;
+}
+.brand img{
+  width:60px;height:60px;
+  object-fit:contain;
+}
+.brand h2{
+  font-size:25px;
+  background:var(--gradient);
+  background-clip:text;
+  -webkit-background-clip:text;
+  color:transparent;
+}
+.brand p{font-size:11px;color:var(--muted);margin-top:4px}
+.online{font-size:11px;color:#35df91;margin-top:5px}
+.online span{display:inline-block;width:7px;height:7px;background:#35df91;border-radius:50%;margin-right:5px}
+
+.new-chat{
+  width:100%;padding:13px;
+  border:0;border-radius:12px;
+  background:var(--gradient);
+  color:white;font-weight:bold;
+  box-shadow:0 0 17px rgba(22,139,255,.25);
+}
+.search{
+  width:100%;padding:12px;
+  border:1px solid var(--border);
+  border-radius:11px;
+  background:var(--panel);
+  color:var(--text);
+  outline:none;
+}
+.section-title{
+  color:var(--muted);
+  font-size:11px;
+  letter-spacing:1.5px;
+  padding:4px 8px;
+  font-weight:bold;
+}
+.nav-list,.chat-list{display:flex;flex-direction:column;gap:5px}
+.nav-item,.chat-item{
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:11px;
+  padding:11px;
+  border:1px solid transparent;
+  background:transparent;
+  border-radius:10px;
+  color:var(--text);
+  text-align:left;
+  font-size:13px;
+}
+.nav-item:hover,.chat-item:hover,.nav-item.active{
+  background:var(--panel2);
+  border-color:var(--border);
+}
+.nav-item .symbol{font-size:17px;width:22px;text-align:center}
+.chat-item{justify-content:space-between}
+.chat-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.chat-actions{display:flex;gap:4px}
+.chat-actions button{
+  background:transparent;border:0;
+  color:var(--muted);padding:3px;
+}
+.chat-actions button:hover{color:var(--cyan)}
+.empty{font-size:12px;color:var(--muted);padding:9px}
+
+.sidebar-bottom{
+  margin-top:auto;
+  display:flex;flex-direction:column;gap:5px;
+  border-top:1px solid var(--border);
+  padding-top:12px;
+}
+.contact-btn{
+  border:1px solid var(--border);
+  background:var(--panel);
+  border-radius:11px;
+  padding:12px;text-align:left;
+  color:var(--text);
+}
+
+/* MAIN */
+.main{
+  flex:1;min-width:0;
+  display:flex;flex-direction:column;
+}
+.topbar{
+  height:66px;min-height:66px;
+  display:flex;align-items:center;
+  justify-content:space-between;
+  padding:0 23px;
+  border-bottom:1px solid var(--border);
+  background:var(--sidebar);
+}
+.top-left{display:flex;align-items:center;gap:14px}
+.top-title{font-size:16px;font-weight:bold}
+.top-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.top-actions{display:flex;gap:10px}
+.icon-btn{
+  width:38px;height:38px;
+  border:1px solid var(--border);
+  border-radius:11px;
+  background:var(--panel);
+}
+.menu-btn{display:none}
+.content{
+  flex:1;overflow-y:auto;
+  padding:25px;
+}
+.welcome{
+  min-height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  gap:17px;
+}
+.main-logo{
+  width:2000px;height:2000px;
+  object-fit:contain;
+  filter:drop-shadow(0 0 20px rgba(20,160,255,.3));
+}
+.logo-fallback{
+  font-size:75px;
+  font-weight:900;
+  letter-spacing:-5px;
+  background:var(--gradient);
+  background-clip:text;
+  -webkit-background-clip:text;
+  color:transparent;
+  filter:drop-shadow(0 0 20px #167dff);
+}
+.welcome h1{font-size:29px}
+.welcome h2{
+  font-size:18px;
+  background:var(--gradient);
+  background-clip:text;
+  -webkit-background-clip:text;
+  color:transparent;
+}
+.welcome p{color:var(--muted);font-size:13px}
+.tag{
+  border:1px solid var(--border);
+  background:var(--panel);
+  padding:9px 16px;
+  border-radius:30px;
+  font-size:12px;color:var(--cyan);
+}
+.cards{
+  width:min(650px,100%);
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:12px;margin-top:10px;
+}
+.feature{
+  padding:18px;
+  text-align:left;
+  border:1px solid var(--border);
+  background:var(--panel);
+  border-radius:14px;
+  box-shadow:var(--shadow);
+}
+.feature strong{display:block;margin-bottom:7px}
+.feature span{font-size:12px;color:var(--muted)}
+
+/* CHAT */
+.chat-area{
+  display:flex;flex-direction:column;
+  gap:13px;max-width:850px;
+  margin:0 auto;width:100%;
+}
+.message{
+  max-width:82%;padding:13px 16px;
+  border-radius:15px;
+  background:var(--panel2);
+  border:1px solid var(--border);
+  line-height:1.5;font-size:14px;
+  white-space:pre-wrap;overflow-wrap:anywhere;
+}
+.message.user{
+  align-self:flex-end;
+  background:linear-gradient(120deg,#075cae,#4833a8);
+  color:white;
+}
+.message.assistant{align-self:flex-start}
+.composer-wrap{
+  padding:13px 22px 18px;
+  border-top:1px solid var(--border);
+  background:var(--sidebar);
+}
+.composer{
+  max-width:850px;margin:auto;
+  display:flex;gap:9px;
+  padding:8px;
+  border:1px solid var(--border);
+  border-radius:15px;
+  background:var(--panel);
+}
+.composer textarea{
+  flex:1;resize:none;min-height:42px;max-height:110px;
+  background:transparent;color:var(--text);
+  border:0;outline:0;padding:11px;
+}
+.send{
+  width:45px;border:0;border-radius:11px;
+  background:var(--gradient);color:white;
+  font-size:19px;
+}
+.disclaimer{text-align:center;color:var(--muted);font-size:10px;margin-top:8px}
+
+/* PAGES */
+.page{max-width:900px;margin:15px auto}
+.page h1{font-size:25px;margin-bottom:10px}
+.page-desc{color:var(--muted);font-size:13px;margin-bottom:22px}
+.page-card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:15px;padding:18px;
+  margin-bottom:12px;
+}
+.page-card h3{margin-bottom:8px}
+.page-card p{color:var(--muted);font-size:13px;line-height:1.6}
+.page-action{
+  padding:10px 14px;margin-top:12px;
+  background:var(--gradient);color:white;
+  border:0;border-radius:9px;
+}
+.setting-row{
+  display:flex;justify-content:space-between;
+  align-items:center;gap:10px;padding:13px 0;
+  border-bottom:1px solid var(--border);
+}
+.setting-row:last-child{border:0}
+.setting-row span{font-size:14px}
+.setting-row button{
+  padding:8px 12px;border:1px solid var(--border);
+  background:var(--panel2);border-radius:8px;
+}
+
+/* MODAL */
+.modal{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.7);
+  z-index:20;align-items:center;justify-content:center;
+  padding:15px;
+}
+.modal.show{display:flex}
+.modal-box{
+  width:min(420px,100%);
+  background:var(--sidebar);
+  border:1px solid var(--border);
+  border-radius:17px;padding:22px;
+}
+.modal-box h2{margin-bottom:17px}
+.modal-box input{
+  width:100%;padding:12px;margin:8px 0;
+  border:1px solid var(--border);
+  border-radius:9px;background:var(--panel);
+  color:var(--text);outline:none;
+}
+.modal-buttons{display:flex;gap:9px;margin-top:12px}
+.modal-buttons button{
+  flex:1;padding:11px;border:0;
+  border-radius:9px;background:var(--gradient);color:white;
+}
+.modal-buttons .cancel{background:var(--panel2);color:var(--text)}
+.footer{text-align:center;color:var(--muted);font-size:11px;padding:12px}
+
+/* MOBILE */
+@media(max-width:760px){
+  .sidebar{
+    position:fixed;z-index:10;
+    top:0;bottom:0;left:-300px;
+    transition:.25s;
+    box-shadow:15px 0 40px rgba(0,0,0,.4);
+  }
+  .sidebar.open{left:0}
+  .menu-btn{display:block}
+  .content{padding:15px}
+  .topbar{padding:0 13px}
+  .main-logo{width:140px;height:140px}
+  .welcome h1{font-size:24px}
+  .cards{gap:8px}
+  .feature{padding:13px}
+  .composer-wrap{padding:10px}
+  .message{max-width:92%}
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+
+  <div class="brand">
+    <img src="image2.png" alt="CWP Infinity Logo"
+         onerror="this.style.display='none'">
+    <div>
+      <h2>CWP</h2>
+      <p>Chat With Purvesh</p>
+      <div class="online"><span></span>Online</div>
+    </div>
+  </div>
+
+  <button class="new-chat" onclick="newChat()">＋ New Chat</button>
+
+  <input class="search" id="searchChats"
+         placeholder="⌕ Search chats..."
+         oninput="renderChats()">
+
+  <div>
+    <div class="section-title">EXPLORE</div>
+    <div class="nav-list">
+      <button class="nav-item" onclick="showPage('Images')"><span class="symbol">▧</span>Images</button>
+      <button class="nav-item" onclick="showPage('Library')"><span class="symbol">▤</span>Library</button>
+      <button class="nav-item" onclick="showPage('Customize')"><span class="symbol">✧</span>Customize</button>
+      <button class="nav-item" onclick="showPage('Projects')"><span class="symbol">▣</span>Projects</button>
+      <button class="nav-item" onclick="showPage('Remote')"><span class="symbol">⌘</span>Remote</button>
+      <button class="nav-item" onclick="showPage('Explore')"><span class="symbol">◎</span>Explore</button>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-title">📌 PINNED CHATS</div>
+    <div class="chat-list" id="pinnedChats"></div>
+  </div>
+
+  <div>
+    <div class="section-title">CHAT HISTORY</div>
+    <div class="chat-list" id="chatHistory"></div>
+  </div>
+
+  <div class="sidebar-bottom">
+    <button class="nav-item" onclick="clearAllChats()">
+      <span class="symbol">⌫</span>Clear All Chats
+    </button>
+    <button class="nav-item" onclick="showPage('Settings')">
+      <span class="symbol">⚙</span>Settings
+    </button>
+    <button class="nav-item" onclick="toggleTheme()">
+      <span class="symbol">◐</span>Dark / Light Mode
+    </button>
+    <button class="contact-btn" onclick="showPage('Contact')">
+      ✉ Contact with Purvesh
+    </button>
+    <button class="nav-item" onclick="showPage('About')">
+      <span class="symbol">ⓘ</span>About CWP
+    </button>
+    <div class="footer">Build with ❤️ by Purvesh</div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <header class="topbar">
+    <div class="top-left">
+      <button class="icon-btn menu-btn" onclick="toggleSidebar()">☰</button>
+      <div>
+        <div class="top-title" id="topTitle">CWP</div>
+        <div class="top-sub">Chat With Purvesh</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="icon-btn" onclick="showPage('Explore')">⌕</button>
+      <button class="icon-btn" onclick="toggleTheme()">◐</button>
+    </div>
+  </header>
+
+  <section class="content" id="content">
+    <div class="welcome" id="welcome">
+      <img class="main-logo" src="image1.png"
+           alt="CWP Main Logo"
+           onerror="this.style.display='none';document.getElementById('logoFallback').style.display='block'">
+      <div class="logo-fallback" id="logoFallback" style="display:none">CWP</div>
+
+      <h1>Welcome to CWP 👋</h1>
+      <h2>Chat With Purvesh</h2>
+      <div class="tag">✧ Your AI. Your Conversation.</div>
+      <p>How can I help you today?</p>
+
+      <div class="cards">
+        <div class="feature">
+          <strong>💻 Learn Coding</strong>
+          <span>Explore programming and technology.</span>
+        </div>
+        <div class="feature">
+          <strong>💡 Get Ideas</strong>
+          <span>Discover new ideas and creativity.</span>
+        </div>
+        <div class="feature">
+          <strong>📚 Study Help</strong>
+          <span>Learn and understand new topics.</span>
+        </div>
+        <div class="feature">
+          <strong>🚀 Be Productive</strong>
+          <span>Organize your projects and work.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-area" id="chatArea" style="display:none"></div>
+    <div id="pageArea" style="display:none"></div>
+  </section>
+
+  <div class="composer-wrap" id="composerWrap" style="display:none">
+    <div class="composer">
+      <textarea id="messageInput" placeholder="Message CWP..."
+        rows="1" onkeydown="handleEnter(event)"></textarea>
+      <button class="send" onclick="sendMessage()">➤</button>
+    </div>
+    <div class="disclaimer">CWP AI connection will be added later.</div>
+  </div>
+</main>
+</div>
+
+<!-- CONTACT MODAL -->
+<div class="modal" id="contactModal">
+  <div class="modal-box">
+    <h2>Contact with Purvesh</h2>
+    <p style="color:var(--muted);font-size:13px">Your contact details</p>
+    <input value="Purvesh Patil" readonly>
+    <input id="emailInput" placeholder="Email ID (Add later)">
+    <div class="modal-buttons">
+      <button onclick="saveEmail()">Save</button>
+      <button class="cancel" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let chats = JSON.parse(localStorage.getItem("cwp_chats") || "[]");
+let currentChat = null;
+let currentPage = "Home";
+let email = localStorage.getItem("cwp_email") || "";
+
+function saveChats(){
+  localStorage.setItem("cwp_chats",JSON.stringify(chats));
+}
+
+function newChat(){
+  const chat={
+    id:Date.now(),
+    title:"New Chat",
+    pinned:false,
+    messages:[]
+  };
+  chats.unshift(chat);
+  currentChat=chat.id;
+  saveChats();
+  renderChats();
+  showChat();
+  closeSidebar();
+  document.getElementById("messageInput").focus();
+}
+
+function renderChats(){
+  const search=document.getElementById("searchChats").value.toLowerCase();
+  const pinned=document.getElementById("pinnedChats");
+  const history=document.getElementById("chatHistory");
+
+  pinned.innerHTML="";
+  history.innerHTML="";
+
+  const filtered=chats.filter(c=>c.title.toLowerCase().includes(search));
+
+  const pinnedItems=filtered.filter(c=>c.pinned);
+  const historyItems=filtered.filter(c=>!c.pinned);
+
+  function createItem(c){
+    const item=document.createElement("div");
+    item.className="chat-item";
+
+    const name=document.createElement("span");
+    name.className="chat-name";
+    name.textContent=c.title;
+    name.onclick=()=>openChat(c.id);
+
+    const actions=document.createElement("div");
+    actions.className="chat-actions";
+
+    const pin=document.createElement("button");
+    pin.textContent=c.pinned?"📌":"⌖";
+    pin.title="Pin / Unpin";
+    pin.onclick=()=>{
+      c.pinned=!c.pinned;
+      saveChats();renderChats();
+    };
+
+    const menu=document.createElement("button");
+    menu.textContent="⋮";
+    menu.title="Chat options";
+    menu.onclick=()=>{
+      const choice=prompt("1 = Rename\n2 = Delete");
+      if(choice==="1"){
+        const name=prompt("Enter new chat name:",c.title);
+        if(name && name.trim()){
+          c.title=name.trim();
+          saveChats();renderChats();
+          if(currentChat===c.id)
+            document.getElementById("topTitle").textContent=c.title;
+        }
+      }
+      if(choice==="2"){
+        if(confirm("Delete this chat?")){
+          chats=chats.filter(x=>x.id!==c.id);
+          if(currentChat===c.id){
+            currentChat=null;
+            showHome();
+          }
+          saveChats();renderChats();
+        }
+      }
+    };
+
+    actions.append(pin,menu);
+    item.append(name,actions);
+    return item;
+  }
+
+  pinnedItems.forEach(c=>pinned.append(createItem(c)));
+  historyItems.forEach(c=>history.append(createItem(c)));
+
+  if(!pinnedItems.length)
+    pinned.innerHTML='<div class="empty">No pinned chats yet</div>';
+
+  if(!historyItems.length)
+    history.innerHTML='<div class="empty">No chat history yet</div>';
+}
+
+function openChat(id){
+  currentChat=id;
+  showChat();
+  closeSidebar();
+}
+
+function showChat(){
+  currentPage="Chat";
+  const chat=chats.find(c=>c.id===currentChat);
+  if(!chat){showHome();return;}
+
+  document.getElementById("topTitle").textContent=chat.title;
+  document.getElementById("welcome").style.display="none";
+  document.getElementById("pageArea").style.display="none";
+  document.getElementById("chatArea").style.display="flex";
+  document.getElementById("composerWrap").style.display="block";
+
+  const area=document.getElementById("chatArea");
+  area.innerHTML="";
+
+  chat.messages.forEach(m=>{
+    const div=document.createElement("div");
+    div.className="message "+m.role;
+    div.textContent=m.text;
+    area.append(div);
+  });
+  area.scrollTop=area.scrollHeight;
+}
+
+function showHome(){
+  currentPage="Home";
+  currentChat=null;
+  document.getElementById("topTitle").textContent="CWP";
+  document.getElementById("welcome").style.display="flex";
+  document.getElementById("chatArea").style.display="none";
+  document.getElementById("pageArea").style.display="none";
+  document.getElementById("composerWrap").style.display="none";
+}
+
+function sendMessage(){
+  const input=document.getElementById("messageInput");
+  const text=input.value.trim();
+  if(!text)return;
+
+  if(!currentChat){
+    const chat={
+      id:Date.now(),
+      title:text.length>25?text.substring(0,25)+"...":text,
+      pinned:false,
+      messages:[]
+    };
+    chats.unshift(chat);
+    currentChat=chat.id;
+  }
+
+  const chat=chats.find(c=>c.id===currentChat);
+  chat.messages.push({role:"user",text:text});
+
+  if(chat.title==="New Chat"){
+    chat.title=text.length>25?text.substring(0,25)+"...":text;
+  }
+
+  // AI can be connected here later.
+  chat.messages.push({
+    role:"assistant",
+    text:"CWP is ready! The real AI connection will be added in a future update."
+  });
+
+  input.value="";
+  saveChats();
+  renderChats();
+  showChat();
+}
+
+function handleEnter(e){
+  if(e.key==="Enter" && !e.shiftKey){
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function clearAllChats(){
+  if(!chats.length)return;
+  if(confirm("Are you sure you want to delete all chats?")){
+    chats=[];
+    currentChat=null;
+    saveChats();
+    renderChats();
+    showHome();
+  }
+}
+
+/* PAGES */
+function showPage(page){
+  currentPage=page;
+  currentChat=null;
+
+  document.getElementById("welcome").style.display="none";
+  document.getElementById("chatArea").style.display="none";
+  document.getElementById("composerWrap").style.display="none";
+
+  const area=document.getElementById("pageArea");
+  area.style.display="block";
+  document.getElementById("topTitle").textContent=page;
+
+  let html="";
+
+  if(page==="Contact"){
+    html=`
+      <div class="page">
+        <h1>Contact with Purvesh</h1>
+        <p class="page-desc">Get in touch with the creator of CWP.</p>
+        <div class="page-card">
+          <h3>👤 Purvesh Patil</h3>
+          <p>Creator of Chat With Purvesh (CWP)</p>
+          <p style="margin-top:12px">✉ Email: <span id="contactEmail">Not added yet</span></p>
+          <button class="page-action" onclick="openModal()">Add / Update Email</button>
+        </div>
+      </div>`;
+  }
+
+  else if(page==="Settings"){
+    html=`
+      <div class="page">
+        <h1>Settings</h1>
+        <p class="page-desc">Customize your CWP experience.</p>
+        <div class="page-card">
+          <div class="setting-row"><span>🌙 Dark Mode</span><button onclick="setTheme('dark')">Enable</button></div>
+          <div class="setting-row"><span>☀ Light Mode</span><button onclick="setTheme('light')">Enable</button></div>
+          <div class="setting-row"><span>✉ Contact Details</span><button onclick="showPage('Contact')">Open</button></div>
+          <div class="setting-row"><span>🗑 Clear Chat History</span><button onclick="clearAllChats()">Clear</button></div>
+        </div>
+      </div>`;
+  }
+
+  else if(page==="About"){
+    html=`
+      <div class="page">
+        <h1>About CWP</h1>
+        <p class="page-desc">Chat With Purvesh</p>
+        <div class="page-card">
+          <h3>Welcome to CWP</h3>
+          <p>CWP is a personal chat project created by Purvesh Patil.</p>
+          <p style="margin-top:12px">Build with ❤️ by Purvesh</p>
+        </div>
+      </div>`;
+  }
+
+  else{
+    const descriptions={
+      Images:"Your image workspace will appear here.",
+      Library:"Your saved library will appear here.",
+      Customize:"Customize your CWP project.",
+      Projects:"Manage your projects here.",
+      Remote:"Remote workspace will appear here.",
+      Explore:"Explore your workspace and features."
+    };
+    html=`
+      <div class="page">
+        <h1>${page}</h1>
+        <p class="page-desc">${descriptions[page]||""}</p>
+        <div class="page-card">
+          <h3>${page} Workspace</h3>
+          <p>This section is ready for future development.</p>
+        </div>
+      </div>`;
+  }
+
+  area.innerHTML=html;
+  if(page==="Contact"){
+    document.getElementById("contactEmail").textContent=email||"Not added yet";
+  }
+  closeSidebar();
+}
+
+function toggleTheme(){
+  const light=document.body.classList.toggle("light");
+  localStorage.setItem("cwp_theme",light?"light":"dark");
+}
+
+function setTheme(theme){
+  document.body.classList.toggle("light",theme==="light");
+  localStorage.setItem("cwp_theme",theme);
+}
+
+function toggleSidebar(){
+  document.getElementById("sidebar").classList.toggle("open");
+}
+function closeSidebar(){
+  document.getElementById("sidebar").classList.remove("open");
+}
+
+function openModal(){
+  document.getElementById("emailInput").value=email;
+  document.getElementById("contactModal").classList.add("show");
+}
+function closeModal(){
+  document.getElementById("contactModal").classList.remove("show");
+}
+function saveEmail(){
+  email=document.getElementById("emailInput").value.trim();
+  localStorage.setItem("cwp_email",email);
+  closeModal();
+  if(currentPage==="Contact")showPage("Contact");
+}
+
+document.getElementById("contactModal").addEventListener("click",e=>{
+  if(e.target.id==="contactModal")closeModal();
+});
+
+const savedTheme=localStorage.getItem("cwp_theme");
+if(savedTheme==="light")document.body.classList.add("light");
+
+renderChats();
+showHome();
+</script>
+</body>
+</html>
